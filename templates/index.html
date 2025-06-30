@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Rice Image Classifier</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, rgba(139, 69, 19, 0.8), rgba(255, 215, 0, 0.6)), 
+                  url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><defs><pattern id="rice" patternUnits="userSpaceOnUse" width="40" height="40"><circle cx="10" cy="10" r="2" fill="%23f4f1de" opacity="0.3"/><circle cx="30" cy="25" r="1.5" fill="%23e9c46a" opacity="0.4"/><circle cx="20" cy="35" r="1" fill="%23f4a261" opacity="0.3"/></pattern></defs><rect width="100%" height="100%" fill="url(%23rice)"/></svg>');
+      background-size: cover, 40px 40px;
+      background-attachment: fixed;
+      min-height: 100vh;
+      font-family: 'Arial', sans-serif;
+    }
+
+    .main-container {
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 3rem;
+      max-width: 600px;
+      margin: 0 auto;
+      margin-top: 10vh;
+      animation: fadeInUp 0.8s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .title {
+      color: #8b4513;
+      font-weight: bold;
+      font-size: 2.5rem;
+      margin-bottom: 1.5rem;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    .title::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 3px;
+      background: linear-gradient(90deg, #f4a261, #e9c46a);
+      border-radius: 2px;
+    }
+
+    .rice-icon {
+      font-size: 4rem;
+      color: #e9c46a;
+      margin-bottom: 1rem;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+      }
+      40% {
+        transform: translateY(-10px);
+      }
+      60% {
+        transform: translateY(-5px);
+      }
+    }
+
+    .upload-form {
+      background: rgba(248, 249, 250, 0.8);
+      border-radius: 15px;
+      padding: 2rem;
+      border: 2px dashed #e9c46a;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .upload-form::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, #f4a261, #e9c46a, #e76f51, #f4a261);
+      border-radius: 15px;
+      z-index: -1;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .upload-form:hover::before {
+      opacity: 1;
+    }
+
+    .upload-form:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(233, 196, 106, 0.3);
+    }
+
+    .form-control {
+      border: none;
+      border-radius: 10px;
+      padding: 1rem;
+      font-size: 1.1rem;
+      background: rgba(255, 255, 255, 0.9);
+      margin-bottom: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+      box-shadow: 0 0 0 3px rgba(233, 196, 106, 0.3);
+      background: white;
+      transform: scale(1.02);
+    }
+
+    .btn-classify {
+      background: linear-gradient(135deg, #e9c46a, #f4a261);
+      border: none;
+      border-radius: 50px;
+      padding: 1rem 2.5rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-classify::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn-classify:hover::before {
+      left: 100%;
+    }
+
+    .btn-classify:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(233, 196, 106, 0.4);
+      background: linear-gradient(135deg, #f4a261, #e76f51);
+    }
+
+    .upload-icon {
+      font-size: 2rem;
+      color: #8b4513;
+      margin-bottom: 1rem;
+    }
+
+    .subtitle {
+      color: #6c757d;
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+      font-style: italic;
+    }
+
+    /* Floating particles animation */
+    .particle {
+      position: fixed;
+      pointer-events: none;
+      opacity: 0.6;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(180deg); }
+    }
+
+    .particle:nth-child(1) { top: 20%; left: 10%; animation-delay: 0s; }
+    .particle:nth-child(2) { top: 60%; left: 85%; animation-delay: 2s; }
+    .particle:nth-child(3) { top: 80%; left: 20%; animation-delay: 4s; }
+  </style>
+</head>
+<body>
+  <!-- Floating particles -->
+  <div class="particle">🌾</div>
+  <div class="particle">🍚</div>
+  <div class="particle">🌾</div>
+
+  <div class="container-fluid">
+    <div class="main-container">
+      <div class="text-center">
+        <i class="fas fa-seedling rice-icon"></i>
+        <h1 class="title">Rice Classifier</h1>
+        <p class="subtitle">Discover the variety of your rice grain with AI precision</p>
+        
+        <div class="upload-form">
+          <i class="fas fa-cloud-upload-alt upload-icon"></i>
+          <h4 style="color: #8b4513; margin-bottom: 1rem;">Upload Rice Grain Image</h4>
+          <form action="/result" method="post" enctype="multipart/form-data">
+            <input type="file" name="image" class="form-control" accept="image/*" required>
+            <button type="submit" class="btn btn-classify">
+              <i class="fas fa-search"></i> Classify Rice
+            </button>
+          </form>
+        </div>
+        
+        <div class="mt-4" style="color: #6c757d;">
+          <small><i class="fas fa-info-circle"></i> Supported formats: JPG, PNG, JPEG</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Add some interactivity
+    document.querySelector('input[type="file"]').addEventListener('change', function(e) {
+      if (e.target.files.length > 0) {
+        const fileName = e.target.files[0].name;
+        const button = document.querySelector('.btn-classify');
+        button.innerHTML = '<i class="fas fa-check"></i> Ready to Classify';
+        button.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+      }
+    });
+  </script>
+</body>
+</html>
